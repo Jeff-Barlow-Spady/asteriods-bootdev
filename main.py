@@ -1,59 +1,48 @@
 import pygame
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT
+from constants import *
 from player import Player
-from asteroidfield import AsteroidField
 from asteroid import Asteroid
+from asteroidfield import AsteroidField
+
 
 def main():
-    try:
-        print("Starting asteroids!")
-        print("Screen width:", SCREEN_WIDTH)
-        print("Screen height:", SCREEN_HEIGHT)
-        dt = 0
-        x = SCREEN_WIDTH / 2
-        y = SCREEN_HEIGHT / 2
-        player = Player(x, y)
-        astro = AsteroidField()
-        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Asteroids")
-        clock = pygame.time.Clock()
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    clock = pygame.time.Clock()
 
-        # Create sprite groups
-        updateable_asteroids = pygame.sprite.Group()
-        drawable = pygame.sprite.Group(player)
-        updateable = pygame.sprite.Group(player, astro)
+    updatable = pygame.sprite.Group()
+    drawable = pygame.sprite.Group()
+    asteroids = pygame.sprite.Group()
 
-        # Set containers for Asteroid and AsteroidField
-        Asteroid.containers = drawable, updateable_asteroids, updateable
-        AsteroidField.containers = updateable_asteroids
+    Asteroid.containers = (asteroids, updatable, drawable)
+    AsteroidField.containers = updatable
+    asteroid_field = AsteroidField()
 
-        # Example instantiation of an Asteroid object
-        asteroid = Asteroid(100, 150, 20)  # Provide x, y, and radius
-        updateable_asteroids.add(asteroid)
-        drawable.add(asteroid)
+    Player.containers = (updatable, drawable)
 
-        running = True
+    player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
-        while running:
-            screen.fill((0, 0, 0))
-            drawable.draw(screen)
-            updateable.update(dt)
-            updateable_asteroids.update(dt)
-            updateable_asteroids.draw(screen)
-            pygame.display.flip()
+    dt = 0
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
 
-            pressed_keys = pygame.key.get_pressed()
-            if pressed_keys:
-                dt = clock.tick(60) / 1000
-            else:
-                dt = 0
+        for obj in updatable:
+            obj.update(dt)
 
-    except Exception as e:
-          print("An error occurred:", e)
+        screen.fill("black")
+
+        for obj in drawable:
+            obj.draw(screen)
+
+        pygame.display.flip()
+
+        # limit the framerate to 60 FPS
+        dt = clock.tick(60) / 1000
+
 
 if __name__ == "__main__":
     main()
+
